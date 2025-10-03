@@ -1,26 +1,37 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function ChatWidget({ onSend }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const endRef = useRef(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (!input.trim()) return;
 
-    setMessages((prev) => [...prev, { role: "user", text: input }]);
+    const userMsg = { role: "user", text: input };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
 
     try {
       const data = await onSend(input);
-      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+      const botMsg = { role: "bot", text: data.reply || "Okay." };
+      setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
       setMessages((prev) => [
         ...prev,
         { role: "system", text: "Error contacting server" },
       ]);
+    } finally {
+      setIsLoading(false);
     }
-
-    setInput("");
   }
 
   return (
@@ -40,6 +51,10 @@ export default function ChatWidget({ onSend }) {
             {m.text}
           </div>
         ))}
+        {isLoading && (
+          <div className="text-left text-gray-500 italic">…typing</div>
+        )}
+        <div ref={endRef} />
       </div>
       <form onSubmit={handleSubmit} className="mt-2 flex">
         <input

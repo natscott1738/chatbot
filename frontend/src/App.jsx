@@ -1,6 +1,5 @@
-import ChatWidget from "./components/ChatWidget";
+import ChatWindow from "./components/ChatWindow";
 import bgImage from "/cbk-bg.png";
-import { sendMessage } from "./services/api";
 
 export default function App() {
   return (
@@ -9,7 +8,7 @@ export default function App() {
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <div className="h-full w-full flex flex-col">
-        <ChatWidget onSend={sendMessage} />
+        <ChatWindow />
       </div>
     </div>
   );
