@@ -19,7 +19,7 @@ def create_app() -> FastAPI:
     origins = [
         "http://localhost:5173",   # Vite dev server
         "http://127.0.0.1:5173",
-        "https://chatbot-app-rh3t.onrender.com",
+        "https://cbk-chat.onrender.com",
     ]
 
     app.add_middleware(
