@@ -8,7 +8,6 @@ export default function ChatWidget({ onSend }) {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // add user message
     setMessages((prev) => [...prev, { role: "user", text: input }]);
 
     try {

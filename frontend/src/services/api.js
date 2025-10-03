@@ -12,5 +12,5 @@ export async function sendMessage(userMessage) {
     throw new Error("Error contacting server");
   }
 
-  return response.json();
+  return response.json(); // backend returns { reply: "...", meta: {...} }
 }
