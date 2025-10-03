@@ -1,39 +1,61 @@
 import { useState } from "react";
-import ChatWindow from "./ChatWindow";
 
-export default function ChatWidget() {
-  const [open, setOpen] = useState(false);
+export default function ChatWidget({ onSend }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    // add user message
+    setMessages((prev) => [...prev, { role: "user", text: input }]);
+
+    try {
+      const data = await onSend(input);
+      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "system", text: "Error contacting server" },
+      ]);
+    }
+
+    setInput("");
+  }
 
   return (
-    <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-4 rounded-full shadow-xl hover:scale-110 transition transform"
-        aria-label="Open chat"
-      >
-        💬
-      </button>
-
-      {open && (
-        <div className="fixed bottom-20 right-6 w-[450px] h-[650px] bg-white border rounded-xl shadow-2xl flex flex-col animate-slide-up overflow-hidden">
-          {/* Header is pinned */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-3 rounded-t-xl flex justify-between items-center shrink-0">
-            <span className="font-semibold">CBK Chatbot</span>
-            <button
-              onClick={() => setOpen(false)}
-              className="hover:scale-110 transition"
-              aria-label="Close chat"
-            >
-              ✖
-            </button>
+    <div className="flex flex-col flex-1 p-4 bg-white/70 rounded">
+      <div className="flex-1 overflow-y-auto space-y-2">
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            className={
+              m.role === "user"
+                ? "text-right text-blue-600"
+                : m.role === "bot"
+                ? "text-left text-green-700"
+                : "text-center text-red-500"
+            }
+          >
+            {m.text}
           </div>
-
-          {/* Chat window fills remaining height */}
-          <div className="flex-1 min-h-0">
-            <ChatWindow />
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
+      <form onSubmit={handleSubmit} className="mt-2 flex">
+        <input
+          className="flex-1 border rounded-l px-2 py-1"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message..."
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 rounded-r"
+        >
+          Send
+        </button>
+      </form>
     </div>
   );
 }
