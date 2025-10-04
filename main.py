@@ -6,6 +6,8 @@ from app.services.middleware import add_middleware
 from app.routers.health import router as health_router
 from app.routers.chat import router as chat_router
 from app.routers.calculators import router as calc_router
+from app.routers.upload import router as upload_router
+
 
 
 def create_app() -> FastAPI:
@@ -34,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix="/v1")
     app.include_router(chat_router, prefix="/v1")
     app.include_router(calc_router, prefix="/v1")
+    app.include_router(upload_router, prefix="/v1")
 
     return app
 
