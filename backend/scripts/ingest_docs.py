@@ -17,17 +17,35 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-small")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-def read_pdfs() -> list[dict]:
+def read_docs() -> list[dict]:
+    """
+    Walk DOCS_DIR recursively and read both PDFs and TXT seed files.
+    Returns a list of dicts with source, category, and text.
+    """
     items = []
-    for pdf_path in DOCS_DIR.rglob("*.pdf"):   # recursive glob
-        reader = PdfReader(str(pdf_path))
-        text = "\n".join(page.extract_text() or "" for page in reader.pages)
-        category = pdf_path.parent.name
-        items.append({
-            "source": pdf_path.name,
-            "category": category,
-            "text": text
-        })
+    for path in DOCS_DIR.rglob("*"):
+        text = None
+        if path.suffix.lower() == ".pdf":
+            try:
+                reader = PdfReader(str(path))
+                text = "\n".join(page.extract_text() or "" for page in reader.pages)
+            except Exception as e:
+                print(f"[warn] Failed to parse PDF {path}: {e}")
+        elif path.suffix.lower() == ".txt":
+            try:
+                text = path.read_text(encoding="utf-8")
+            except Exception as e:
+                print(f"[warn] Failed to read TXT {path}: {e}")
+        else:
+            continue
+
+        if text and text.strip():
+            category = path.parent.name
+            items.append({
+                "source": path.name,
+                "category": category if category != "cbk_pdfs" else "seed",
+                "text": text
+            })
     return items
 
 def chunk_text(text: str, max_chars: int = 1200, overlap: int = 100) -> list[str]:
@@ -49,8 +67,8 @@ def main():
         raise RuntimeError("OPENAI_API_KEY not set in environment")
     client = OpenAI(api_key=OPENAI_API_KEY)
 
-    items = read_pdfs()
-    print(f"[ingest] Found {len(items)} PDFs")
+    items = read_docs()
+    print(f"[ingest] Found {len(items)} documents")
 
     all_chunks, meta = [], []
     for item in items:
@@ -74,9 +92,9 @@ def main():
     print(f"[ingest] Embedded into shape {vectors.shape}")
 
     np.save(OUT_DIR / "vectors.npy", vectors)
-    with open(OUT_DIR / "meta.json", "w") as f:
-        json.dump({"chunks": all_chunks, "meta": meta}, f)
-    with open(OUT_DIR / "config.json", "w") as f:
+    with open(OUT_DIR / "meta.json", "w", encoding="utf-8") as f:
+        json.dump({"chunks": all_chunks, "meta": meta}, f, ensure_ascii=False, indent=2)
+    with open(OUT_DIR / "config.json", "w", encoding="utf-8") as f:
         json.dump({"embed_model": EMBED_MODEL}, f)
 
     print("[ingest] Saved index:", OUT_DIR)
