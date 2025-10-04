@@ -96,7 +96,7 @@ export default function ChatWindow({ onClose }) {
       const key = import.meta.env.VITE_API_KEY;
       if (!base) throw new Error("VITE_API_URL is missing");
 
-      const url = `${base}/upload`;
+      const url = `${base}/v1/upload`;
       const resp = await fetch(url, {
         method: "POST",
         headers: {
@@ -337,7 +337,7 @@ export default function ChatWindow({ onClose }) {
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept=".pdf,.txt,.csv"
+          accept=".pdf,.txt,.csv.png,.jpg,.jpeg"
           onChange={handleFileUpload}
         />
 

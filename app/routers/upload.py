@@ -22,6 +22,11 @@ async def upload_file(file: UploadFile = File(...)):
         text = contents.decode("utf-8", errors="ignore")
         # optionally parse with pandas
 
+    elif file.filename.lower().endswith((".png", ".jpg", ".jpeg")):
+        # Save or process image
+        return {"reply": f"Image '{file.filename}' received (size {len(contents)} bytes)."}
+
+
     else:
         return JSONResponse({"reply": "Unsupported file type."}, status_code=400)
 
