@@ -4,22 +4,98 @@ import os
 from openai import OpenAI
 import numpy as np
 import json
+import re
+
 
 # --- Router setup ---
 router = APIRouter()
 
 # --- Scope guard utility ---
+# Expanded keyword set
 CBK_KEYWORDS = [
-    "central bank", "cbk", "kenya shilling", "monetary policy",
-    "interest rate", "forex", "exchange rate", "treasury bond",
-    "inflation", "banking supervision", "financial stability"
+    # Core identifiers
+    "central bank", "central bank of kenya", "cbk", "banki kuu", "monetary authority",
+    "cbk kenya", "cbk governor", "board of cbk", "monetary policy committee", "mpc",
+
+    # Currency & monetary policy
+    "kenya shilling", "kes", "currency", "exchange rate", "forex", "fx", "inflation",
+    "interest rate", "monetary policy", "policy rate", "cbk rate", "cbr",
+    "foreign reserves", "balance of payments", "money supply", "liquidity",
+    "inflation target", "price stability",
+
+    # Government securities (from securities_faqs, treasury_bills_bonds_application_form)
+    "treasury bill", "t-bill", "treasury bond", "government securities", "bond auction",
+    "repo", "reverse repo", "open market operations", "omo", "liquidity management",
+    "auction results", "cut-off rate", "weighted average rate", "yield curve",
+    "bond prospectus", "infrastructure bond", "savings bond", "coupon rate",
+    "discount rate", "rediscount", "secondary market", "nairobi securities exchange",
+    "application form", "tender box", "value date", "maturity date", "rollover",
+    "withholding tax", "tax exemption", "virtual account", "cds account",
+    "portfolio account number", "nominee account", "diaspora investment",
+
+    # Licensing & regulatory forms (from LicenceApplicationFormMicrofinanceBank,
+    # FitProperFormDirectorsSeniorOfficersMicrofinanceBanks, FitProperFormSignificantShareholdersMicrofinanceBanks,
+    # NotesCompletionApplicationFormsMicrofinanceBanks)
+    "licence application", "licensing", "deposit taking", "microfinance", "microfinance bank",
+    "community microfinance", "nationwide microfinance", "fit and proper", "significant shareholder",
+    "shareholding", "directorship", "professional suitability", "reputational suitability",
+    "employment record", "sources of funds", "borrowings", "declaration", "commissioner for oaths",
+    "magistrate", "witnessed before me", "personal information", "identification card", "passport number",
+    "pin number", "postal address", "physical address", "educational qualifications", "professional qualifications",
+    "bankers", "referees", "confidential information", "privacy statement", "customer agreement",
+    "terms and conditions", "national treasury", "county government", "government agency",
+
+    # Supervision & prudential guidelines (from DTMs-New-Products-Guidelines, Conversions)
+    "prudential guidelines", "banking supervision", "capital adequacy", "liquidity ratio",
+    "risk management", "internal controls", "ifrs", "tax implications", "withholding tax",
+    "product approval", "market research", "competences", "new product", "deposit taking microfinance",
+    "conversion", "non-bank financial institution", "nbfi", "commercial bank", "approval date",
+
+    # CBK services & forms (from Commemorative-Coins-Request-Form, CommercialBanksIBRegistration)
+    "commemorative coin", "kenya@50", "cbk@50", "gold coin", "silver coin", "nickel brass coin",
+    "coin sale", "request form", "amount payable", "organization", "payment mode",
+    "internet banking", "ib registration", "business internet banking", "foreign exchange services",
+    "omo securities", "government securities", "approver", "inputter", "mandate number",
+    "authorized signatory", "sms groups", "official email", "mobile number", "confidential information",
+    "privacy statement", "customer agreement", "acceptance of terms",
+
+    # Payment systems
+    "payment system", "kepss", "rtgs", "real time gross settlement",
+    "kenya electronic payment and settlement system", "mobile money",
+    "mpesa", "airtel money", "pesalink", "national payment system",
+    "switch operator", "settlement account", "clearing house", "intraday liquidity facility",
+    "repo facility", "repurchase agreement",
+
+    # Institutional & legal references
+    "cbk act", "banking act", "microfinance act", "prudential regulations",
+    "anti-money laundering", "aml", "proceeds of crime act",
+    "financial reporting centre", "frc", "capital markets authority", "cma",
+    "insurance regulatory authority", "ira", "sacco societies regulatory authority", "sasra",
+    "national treasury", "ministry of finance", "financial stability report", "annual report",
+    "press release", "circular", "guideline", "supervision report", "governor statement"
 ]
 
+def normalize(text: str) -> str:
+    """Lowercase and strip punctuation for easier matching."""
+    return re.sub(r"[^a-z0-9\s]", " ", text.lower())
+
 def is_cbk_related(query: str) -> bool:
-    q = query.lower()
-    return any(k in q for k in CBK_KEYWORDS)
+    q = normalize(query)
+    # Direct keyword match
+    if any(k in q for k in CBK_KEYWORDS):
+        return True
+    # Fuzzy: allow partial matches on important tokens
+    tokens = q.split()
+    important = {"cbk", "central", "bank", "kenya", "shilling", "treasury", "bond"}
+    if any(tok in important for tok in tokens):
+        return True
+    return False
 
 def enforce_scope(query: str):
+    """
+    Returns None if query is in scope.
+    Returns a JSONResponse refusal if query is out of scope.
+    """
     if not is_cbk_related(query):
         return JSONResponse(
             {"reply": "I can only answer questions related to the Central Bank of Kenya and its policies."},
