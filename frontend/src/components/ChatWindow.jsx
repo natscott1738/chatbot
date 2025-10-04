@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function ChatWindow() {
+export default function ChatWindow({ onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [useRag, setUseRag] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const endRef = useRef(null);
 
-  // Auto-scroll when messages change
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -15,9 +15,9 @@ export default function ChatWindow() {
     const text = input.trim();
     if (!text) return;
 
-    // Add user message using functional update to avoid drops
     setMessages((msgs) => [...msgs, { role: "user", text }]);
     setInput("");
+    setIsLoading(true);
 
     try {
       const resp = await fetch(import.meta.env.VITE_API_URL, {
@@ -26,56 +26,90 @@ export default function ChatWindow() {
           "Content-Type": "application/json",
           "X-API-Key": import.meta.env.VITE_API_KEY,
         },
-        body: JSON.stringify({ text, use_rag: useRag }),
+        body: JSON.stringify({ text }),
       });
 
       const data = await resp.json();
-      const reply = typeof data?.reply === "string" ? data.reply : "Okay.";
-
-      // Append bot reply
-      setMessages((msgs) => [...msgs, { role: "bot", text: reply }]);
+      setMessages((msgs) => [...msgs, { role: "bot", text: data.reply }]);
     } catch {
       setMessages((msgs) => [
         ...msgs,
-        { role: "bot", text: "Error contacting server." },
+        { role: "system", text: "Error contacting server." },
       ]);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Messages area: scrollable and allowed to shrink to enable overflow scroll */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3 bg-white">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`p-3 rounded-lg max-w-[80%] break-words ${
-              m.role === "user"
-                ? "bg-blue-600 text-white self-end ml-auto"
-                : "bg-gray-200 text-gray-900 self-start mr-auto"
-            }`}
-          >
-            {m.text}
+    <motion.div
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 50, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden
+                 w-full sm:w-[400px] h-full sm:h-[600px]"
+    >
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 flex justify-between items-center">
+        <h2 className="font-semibold">💬 CBK Assistant</h2>
+        <button onClick={onClose} className="hover:text-gray-200">✖</button>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        <AnimatePresence>
+          {messages.map((m, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`p-3 rounded-lg max-w-[80%] break-words ${
+                m.role === "user"
+                  ? "bg-blue-600 text-white self-end ml-auto"
+                  : m.role === "bot"
+                  ? "bg-gray-200 text-gray-900 self-start mr-auto"
+                  : "text-red-600 text-sm text-center w-full"
+              }`}
+            >
+              {m.text}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {isLoading && (
+          <div className="flex gap-1 text-gray-500 text-sm">
+            <span className="animate-bounce">●</span>
+            <span className="animate-bounce delay-150">●</span>
+            <span className="animate-bounce delay-300">●</span>
           </div>
-        ))}
+        )}
         <div ref={endRef} />
       </div>
 
-      {/* Input bar: pinned */}
-      <div className="p-3 border-t flex items-center gap-2 bg-white shrink-0">
+      {/* Input */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          sendMessage();
+        }}
+        className="p-3 border-t flex items-center gap-2 bg-white"
+      >
         <input
-          className="flex-1 border rounded p-2 text-sm"
+          className="flex-1 border rounded-lg p-2 text-sm focus:ring focus:ring-blue-300"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your message..."
         />
         <button
-          onClick={sendMessage}
-          className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transform transition hover:scale-105 hover:shadow-lg active:scale-95"
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md transform transition hover:scale-105 active:scale-95"
         >
-          🚀 Send
+          Send
         </button>
-      </div>
-    </div>
+      </form>
+    </motion.div>
   );
 }
