@@ -3,10 +3,12 @@ from fastapi.responses import JSONResponse
 import os
 import json
 from openai import OpenAI
+from difflib import get_close_matches
 
 # --- Import scope guard & normalizer ---
 from backend.enforce_scope import enforce_scope, normalize
 
+# --- Router setup ---
 router = APIRouter()
 
 # --- Wide seed fallbacks ---
@@ -16,7 +18,7 @@ SEED_FALLBACKS = {
         "It issues and manages the Kenya Shilling, formulates and implements monetary policy, "
         "regulates and supervises banks and microfinance institutions, manages foreign reserves, "
         "and ensures financial stability. CBK also manages government securities, oversees payment "
-        "systems like KEPSs/RTGS, and licenses financial institutions."
+        "systems like KEPSS/RTGS, and licenses financial institutions."
     ),
     "securities": (
         "Treasury bills (T‑bills) are short‑term government securities with maturities of 91, 182, "
@@ -73,6 +75,12 @@ SEED_FALLBACKS = {
         "Markets Authority (CMA), Insurance Regulatory Authority (IRA), Sacco Societies Regulatory "
         "Authority (SASRA), and the Financial Reporting Centre (FRC). These institutions collectively "
         "ensure financial stability, consumer protection, and regulatory compliance."
+    ),
+    "accounts_loans": (
+        "The Central Bank of Kenya (CBK) does not open personal accounts or issue loans directly to the public. "
+        "Instead, CBK regulates and supervises commercial banks, microfinance institutions, and other financial "
+        "intermediaries that provide accounts, deposits, and credit facilities. To open an account or apply for a loan, "
+        "approach a licensed commercial bank or microfinance institution supervised by CBK."
     )
 }
 
@@ -105,15 +113,28 @@ DOMAIN_KEYWORDS = {
     "legal": {
         "act", "regulation", "law", "treasury", "cma", "ira", "sasra", "frc",
         "banking act", "microfinance act", "cbk act", "national payment system act"
+    },
+    "accounts_loans": {
+        "account", "open account", "cbk account", "loan", "loans", "credit",
+        "advance", "facility", "overdraft", "deposit", "savings", "fixed deposit",
+        "term deposit"
     }
 }
+
+# --- Fuzzy matching helper ---
+def fuzzy_match(query: str, keywords: set, cutoff: float = 0.8) -> bool:
+    words = query.split()
+    for word in words:
+        if get_close_matches(word, keywords, n=1, cutoff=cutoff):
+            return True
+    return False
 
 # --- Pick fallback based on query ---
 def pick_fallback(query: str) -> str:
     q = normalize(query)
     for domain, keywords in DOMAIN_KEYWORDS.items():
         for kw in keywords:
-            if kw in q:
+            if kw in q or fuzzy_match(q, keywords):
                 return SEED_FALLBACKS[domain]
     return SEED_FALLBACKS["default"]
 
@@ -122,7 +143,7 @@ def retrieve_cbk_docs(query: str, top_k: int = 3):
     try:
         with open("backend/data/faiss_index/meta.json", encoding="utf-8") as f:
             meta = json.load(f)
-        chunks = meta["chunks"]
+        chunks = meta.get("chunks", [])
         return chunks[:top_k]
     except Exception as e:
         print(f"[warn] Retrieval failed: {e}")
@@ -146,32 +167,42 @@ async def chat_endpoint(request: Request):
     data = await request.json()
     query = data.get("text", "").strip()
 
-    # 1. Scope guard
+    # 1) Scope guard handles chit-chat and hard refusals
     result = enforce_scope(query)
     if isinstance(result, JSONResponse):
         return result
-    scope_response, seed_fallback = result
+    scope_response, seed_fallback = result  # seed_fallback kept for legacy paths
 
-    # 2. Retrieve docs
+    # 2) Try retrieval
     docs = retrieve_cbk_docs(query, top_k=3)
 
-    # 3. If retrieval fails, use topic-specific fallback
+    # 3) If retrieval fails, use domain-aware fallback
     if not docs:
         return {"reply": pick_fallback(query)}
 
-    # 4. Build prompt
+    # 4) Build constrained prompt with retrieved context
     context = "\n\n".join(docs)
     system_instruction = (
-        "You are CBK Assistant. Only answer using the provided CBK documents. "
-        "If the answer is not in them, fall back to the seed knowledge."
+        "You are CBK Assistant. Answer strictly using the provided CBK documents. "
+        "If the answer is not in them, you must say you don't have it and provide the seed fallback content "
+        "the system will supply. Do not invent policies or data."
     )
-    prompt = f"{system_instruction}\n\nContext:\n{context}\n\nUser: {query}\nAssistant:"
+    prompt = (
+        f"{system_instruction}\n\n"
+        f"Context:\n{context}\n\n"
+        f"User: {query}\n"
+        f"Assistant:"
+    )
 
-    # 5. Call model
-    reply = call_model(prompt)
+    # 5) Model call
+    try:
+        reply = call_model(prompt)
+    except Exception as e:
+        print(f"[error] Model call failed: {e}")
+        return {"reply": pick_fallback(query)}
 
-    # 6. Post-check: if model drifts, use topic-specific fallback
-    if "Central Bank" not in reply and "CBK" not in reply:
+    # 6) Lightweight drift check; if reply is off-topic, fallback
+    if not any(token in reply.lower() for token in ["cbk", "central bank", "kenya", "treasury", "keps", "rtgs"]):
         return {"reply": pick_fallback(query)}
 
     return {"reply": reply}
