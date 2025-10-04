@@ -1,0 +1,25 @@
+### Prudential Guidelines and Supervision
+
+CBK issues Prudential Guidelines to ensure stability and soundness of financial institutions.
+
+### Key Areas
+- Capital adequacy requirements.
+- Liquidity management.
+- Corporate governance standards.
+- Risk management frameworks.
+- Credit classification and provisioning.
+- Disclosure and transparency requirements.
+
+### Compliance
+- Institutions must submit regular returns to CBK.
+- CBK conducts inspections and stress tests.
+- Non‑compliance may result in sanctions.
+
+### Related Institutions
+- Financial Reporting Centre (FRC) for AML/CTF compliance.
+- Credit Reference Bureaus (CRBs) for credit information sharing.
+
+### Common FAQs
+- **What are Prudential Guidelines?** → CBK rules on capital, liquidity, governance, and risk.
+- **What is capital adequacy?** → The minimum capital banks must hold relative to risk‑weighted assets.
+- **What is liquidity ratio?** → The proportion of liquid assets to short‑term liabilities.

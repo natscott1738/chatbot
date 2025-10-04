@@ -1,0 +1,73 @@
+The Central Bank of Kenya (CBK) is the primary monetary authority of Kenya, established in 1966 after the dissolution of the East African Currency Board. Its mandate is set out in the Constitution of Kenya, the CBK Act, the Banking Act, the Microfinance Act, the National Payment System Act, and related financial sector laws.
+
+### Core Mandate
+- Issue and manage the Kenya Shilling (KES), including banknotes, coins, and commemorative coins.
+- Formulate and implement monetary policy to maintain price stability and support economic growth.
+- Regulate and supervise commercial banks, microfinance banks, deposit‑taking microfinance institutions, foreign exchange bureaus, and other licensed financial institutions.
+- Manage Kenya’s foreign exchange reserves and ensure stability in the forex market.
+- Promote financial stability, financial inclusion, and consumer protection.
+- Act as banker to the Government of Kenya, managing public debt and issuing Treasury bills and bonds.
+- Oversee national payment and settlement systems, including KEPSS and RTGS.
+
+### Currency & Monetary Policy
+- CBK issues banknotes and coins, including commemorative coins (e.g., Kenya@50, CBK@50).
+- Inflation is managed through the Central Bank Rate (CBR), open market operations (OMO), repos, reverse repos, and reserve requirements.
+- The Monetary Policy Committee (MPC) meets regularly to review economic conditions and set policy.
+- CBK publishes monetary policy statements, inflation outlooks, and economic reports.
+
+### Government Securities
+- CBK manages issuance of Treasury bills (91‑day, 182‑day, 364‑day) and Treasury bonds (2‑year, 5‑year, 10‑year, 15‑year, 20‑year, 25‑year, 30‑year).
+- Auctions are conducted weekly (T‑bills) and periodically (bonds).
+- Investors must open a Central Depository System (CDS) account.
+- Key concepts: cut‑off rate, weighted average rate, coupon rate, yield curve, rollover, maturity date, value date, withholding tax, tax exemption.
+- Infrastructure bonds and savings bonds are issued to support development projects.
+- Application forms, tender boxes, and auction management committees are part of the process.
+
+### Licensing & Supervision
+- CBK licenses and supervises commercial banks, microfinance banks, forex bureaus, and payment service providers.
+- Licensing requires submission of detailed application forms, including information on shareholding, directors, senior officers, capital adequacy, liquidity ratios, and risk management frameworks.
+- Fit and Proper forms must be completed by directors and significant shareholders to demonstrate competence, integrity, and financial soundness.
+- Applications are reviewed by the Banking Supervision Department.
+- Prudential Guidelines cover capital adequacy, liquidity management, corporate governance, risk management, credit classification, provisioning, and disclosure.
+- CBK oversees Credit Reference Bureaus (CRBs) to ensure responsible lending.
+
+### Microfinance Licensing
+To apply for a microfinance licence:
+1. Complete the official Licence Application Form.
+2. Provide details of shareholding, directors, senior officers, and significant shareholders.
+3. Submit Fit and Proper forms for directors and shareholders.
+4. Demonstrate compliance with minimum capital requirements and prudential standards.
+5. Provide supporting documents such as audited financial statements, business plans, governance structures, and risk management frameworks.
+6. Pay the prescribed application fees.
+7. Submit the application to CBK’s Banking Supervision Department for review and approval.
+
+### Payment Systems
+- CBK oversees the National Payment System, including KEPSS, RTGS, mobile money platforms (M‑Pesa, Airtel Money, PesaLink), and clearing houses.
+- Provides intraday liquidity facilities and repo arrangements to support settlement.
+- Ensures safety, efficiency, and resilience of payment infrastructure.
+
+### Customer‑Facing Services
+- Opening CDS accounts for government securities investment.
+- Registering for internet banking services for commercial banks.
+- Purchasing commemorative coins.
+- Accessing circulars, guidelines, and press releases via the CBK website.
+
+### Institutional & Legal Framework
+- CBK operates under the CBK Act, Banking Act, Microfinance Act, National Payment System Act, and AML/CTF laws.
+- Works with the National Treasury, Capital Markets Authority (CMA), Insurance Regulatory Authority (IRA), Sacco Societies Regulatory Authority (SASRA), and Financial Reporting Centre (FRC).
+- Publishes annual reports, financial stability reports, supervision reports, and governor’s statements.
+
+### Common FAQs
+- What is CBK? → Kenya’s monetary authority, established in 1966.
+- What does CBK do? → Issues currency, sets monetary policy, supervises banks, manages forex reserves, ensures stability.
+- How do I apply for a microfinance licence? → Submit application forms, Fit and Proper forms, capital adequacy proof, and supporting documents to CBK.
+- What is a Treasury bill? → A short‑term government security (91, 182, 364 days).
+- What is a Treasury bond? → A medium‑ to long‑term government security (2–30 years).
+- How do I invest in government securities? → Open a CDS account, complete application forms, participate in auctions.
+- What is KEPSs? → Kenya Electronic Payment and Settlement System, CBK’s RTGS platform.
+- What is RTGS? → Real‑Time Gross Settlement system for high‑value payments.
+- What are Prudential Guidelines? → CBK’s rules on capital adequacy, liquidity, governance, and risk management.
+- What is the Central Bank Rate (CBR)? → The policy rate used to signal monetary policy stance.
+- What is a Fit and Proper form? → A CBK form assessing directors’ and shareholders’ suitability.
+- What is a CDS account? → Central Depository System account required for investing in government securities.
+- What is a commemorative coin? → Special coins issued by CBK to mark national milestones.

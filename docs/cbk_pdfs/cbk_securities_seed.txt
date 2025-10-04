@@ -1,0 +1,105 @@
+### Government Securities in Kenya
+
+The Central Bank of Kenya (CBK), on behalf of the Government of Kenya, issues and manages Treasury bills (T‑bills) and Treasury bonds (T‑bonds). These securities are used to raise funds for government expenditure and to manage liquidity in the economy. They are considered risk‑free investments because they are backed by the Government of Kenya.
+
+---
+
+### Treasury Bills (T‑Bills)
+- Short‑term securities with maturities of 91 days, 182 days, and 364 days.
+- Sold at a discount to face value; investors receive the full face value at maturity.
+- Commonly used by investors seeking short‑term, low‑risk returns.
+- Auctioned weekly, typically on Thursdays, with settlement on the following Monday.
+
+### Treasury Bonds (T‑Bonds)
+- Medium‑ to long‑term securities with maturities ranging from 2 years to 30 years.
+- Pay semi‑annual interest (coupon payments) until maturity, when the principal is repaid.
+- Types include:
+  - **Fixed coupon bonds** (interest rate remains constant).
+  - **Floating rate bonds** (coupon linked to a benchmark, e.g., CBR).
+  - **Infrastructure bonds** (tax‑exempt, issued to fund development projects).
+  - **Savings bonds** (targeted at retail investors).
+- Auctioned monthly or as announced in CBK prospectuses.
+
+---
+
+### Investor Requirements
+- Investors must open a **Central Depository System (CDS) account** with CBK or through a commercial bank.
+- Required documents: national ID or passport, KRA PIN, passport photo, and completed CDS account opening form.
+- Both individuals and institutions (banks, pension funds, insurance companies, corporates) can invest.
+- Non‑residents and diaspora investors are eligible, subject to CBK guidelines.
+
+---
+
+### Auction Process
+1. CBK publishes an **auction prospectus** with details of the security, amount on offer, coupon rate (for bonds), and auction date.
+2. Investors submit bids through their CDS accounts:
+   - **Competitive bids**: investor specifies the desired interest rate/yield.
+   - **Non‑competitive bids**: investor accepts the average accepted rate.
+3. Bids are submitted by 2:00 PM on auction day.
+4. CBK announces results, including the **cut‑off rate**, **weighted average rate**, and amounts allocated.
+5. Successful bidders settle payments by the value date (usually the following Monday).
+
+---
+
+### Key Terms
+- **Face Value**: The amount the investor will receive at maturity.
+- **Discount Rate**: The difference between purchase price and face value for T‑bills.
+- **Coupon Rate**: The fixed or floating interest rate paid on bonds.
+- **Yield Curve**: Graph showing yields across different maturities.
+- **Cut‑off Rate**: The highest accepted yield in an auction.
+- **Weighted Average Rate (WAR)**: The average yield of successful bids.
+- **Rollover**: Reinvesting proceeds from a maturing security into a new issue.
+- **Maturity Date**: The date when principal is repaid.
+- **Value Date**: The date when payment for securities is due.
+- **Withholding Tax**: Tax deducted from interest income (varies by maturity).
+
+---
+
+### Settlement & Secondary Market
+- Settlement is done via investors’ CDS accounts.
+- Securities can be traded in the **secondary market** through the Nairobi Securities Exchange (NSE).
+- Investors may sell before maturity, subject to market conditions.
+
+---
+
+### Investor Protection & Guidelines
+- CBK provides investor education through FAQs, brochures, and its website.
+- Minimum investment amounts:
+  - T‑bills: KES 100,000.
+  - T‑bonds: KES 50,000.
+- CBK ensures transparency by publishing auction results and prospectuses.
+- Retail investors can participate directly or through commercial banks.
+
+---
+
+### Common FAQs
+- **What is a Treasury bill?** → A short‑term government security (91, 182, 364 days) sold at a discount.
+- **What is a Treasury bond?** → A medium‑ to long‑term government security (2–30 years) paying semi‑annual interest.
+- **How do I invest?** → Open a CDS account, complete application forms, and submit bids during auctions.
+- **What is a CDS account?** → An account at CBK for holding government securities electronically.
+- **What is a competitive bid?** → A bid specifying the yield you want.
+- **What is a non‑competitive bid?** → A bid accepting the average accepted yield.
+- **What is an infrastructure bond?** → A tax‑exempt bond issued to fund development projects.
+- **Can diaspora investors participate?** → Yes, through CDS accounts and authorized agents.
+- **What happens if I miss the auction deadline?** → The bid is not considered; you must wait for the next issue.
+- **Can I sell before maturity?** → Yes, in the secondary market via the NSE.
+
+---
+
+### Related Institutions
+- **National Treasury**: Determines borrowing needs and authorizes issuance.
+- **CBK**: Manages issuance, auctions, settlement, and investor accounts.
+- **Nairobi Securities Exchange (NSE)**: Facilitates secondary market trading.
+- **Commercial Banks**: Act as agents for investors in opening CDS accounts and submitting bids.
+
+---
+
+This knowledge ensures CBK Assistant can always answer queries like:
+- “What is a Treasury bill or bond?”
+- “How do I open a CDS account?”
+- “What is the minimum investment for government securities?”
+- “What is the difference between competitive and non‑competitive bids?”
+- “What is an infrastructure bond?”
+- “How do I roll over my maturing T‑bill?”
+- “Can diaspora investors buy Kenyan government securities?”
+- “What is the cut‑off rate in an auction?”
