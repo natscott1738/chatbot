@@ -43,18 +43,18 @@ export default function ChatWindow({ onClose }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 50, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden
-                 w-full sm:w-[400px] h-full sm:h-[600px]"
-    >
+  initial={{ opacity: 0, y: 50, scale: 0.95 }}
+  animate={{ opacity: 1, y: 0, scale: 1 }}
+  exit={{ opacity: 0, y: 50, scale: 0.95 }}
+  transition={{ duration: 0.3 }}
+  className="flex flex-col bg-white rounded-none sm:rounded-xl shadow-2xl overflow-hidden
+             w-full h-full sm:w-[400px] sm:h-[600px]"
+>
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 flex justify-between items-center">
-        <h2 className="font-semibold">💬 CBK Assistant</h2>
-        <button onClick={onClose} className="hover:text-gray-200">✖</button>
-      </div>
+  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 flex justify-between items-center">
+    <h2 className="font-semibold">💬 CBK Assistant</h2>
+    <button onClick={onClose} className="hover:text-gray-200">✖</button>
+  </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">

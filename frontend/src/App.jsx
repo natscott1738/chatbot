@@ -24,7 +24,10 @@ export default function App() {
       {/* Chat overlay */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 sm:inset-auto sm:bottom-16 sm:right-4 flex justify-center sm:justify-end items-end sm:items-end">
+          <div
+            className="fixed inset-0 sm:inset-auto sm:bottom-16 sm:right-4
+                       flex justify-center sm:justify-end items-end sm:items-end"
+          >
             <ChatWindow onClose={() => setIsOpen(false)} />
           </div>
         )}
