@@ -81,6 +81,11 @@ SEED_FALLBACKS = {
         "Instead, CBK regulates and supervises commercial banks, microfinance institutions, and other financial "
         "intermediaries that provide accounts, deposits, and credit facilities. To open an account or apply for a loan, "
         "approach a licensed commercial bank or microfinance institution supervised by CBK."
+    ),
+    "leadership": (
+        "The Central Bank of Kenya (CBK) is headed by the Governor, who serves as the chief executive officer "
+        "and chairs the Monetary Policy Committee (MPC). The Governor is supported by Deputy Governors and a Board of Directors. "
+        "For the current office holders and their profiles, please refer to the official CBK website (www.centralbank.go.ke)."
     )
 }
 
@@ -118,8 +123,13 @@ DOMAIN_KEYWORDS = {
         "account", "open account", "cbk account", "loan", "loans", "credit",
         "advance", "facility", "overdraft", "deposit", "savings", "fixed deposit",
         "term deposit"
+    },
+    "leadership": {
+        "governor", "cbk governor", "deputy governor", "board", "chairman",
+        "monetary policy committee", "mpc", "directors", "leadership"
     }
 }
+
 
 # --- Fuzzy matching helper ---
 def fuzzy_match(query: str, keywords: set, cutoff: float = 0.8) -> bool:
