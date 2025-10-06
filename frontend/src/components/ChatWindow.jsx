@@ -10,7 +10,6 @@ import {
   FiSend,
 } from "react-icons/fi";
 
-// Avatars served from public/
 const HEADER_AVATAR_SRC = "/chatbot-avatar.png";
 const BUBBLE_AVATAR_SRC = "/bot-bubble-avatar.png";
 const BUBBLE_AVATAR_FALLBACK = "/fallback-bot.png";
@@ -22,6 +21,9 @@ export default function ChatWindow({ onClose }) {
   const [input, setInput] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  const [language, setLanguage] = useState("en"); // "en" or "sw"
+
   const endRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -31,7 +33,6 @@ export default function ChatWindow({ onClose }) {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
   // Send text message to backend
   async function handleSend(e) {
     e.preventDefault();
@@ -53,7 +54,7 @@ export default function ChatWindow({ onClose }) {
           "Content-Type": "application/json",
           ...(key ? { "X-API-Key": key } : {}),
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, lang: language }),
       });
 
       const payload = await resp.json();
@@ -123,17 +124,28 @@ export default function ChatWindow({ onClose }) {
         { role: "system", text: "Error uploading file.", timestamp: new Date() },
       ]);
     } finally {
-      // reset input so selecting the same file again re-triggers change
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
-  // Restart banner (slides in)
+  // Restart conversation
   function handleRestart() {
-    setMessages((msgs) => [
-      ...msgs,
-      { role: "system", type: "banner", text: "Conversation restarted. 👋", timestamp: new Date() },
-    ]);
+    setMessages([]); // clear conversation
+    setShowBanner(true);
+    setTimeout(() => setShowBanner(false), 4000);
+    // Add fresh greeting in current language
+    setTimeout(() => {
+      setMessages([
+        {
+          role: "bot",
+          text:
+            language === "en"
+              ? "Hi! 👋 Welcome to CBK Assistant."
+              : "Habari! 👋 Karibu kwa CBK Assistant.",
+          timestamp: new Date(),
+        },
+      ]);
+    }, 600);
   }
 
   function handleDownload() {
@@ -147,7 +159,20 @@ export default function ChatWindow({ onClose }) {
   }
 
   function handleChangeLanguage() {
-    alert("Language change feature coming soon!");
+    const newLang = language === "en" ? "sw" : "en";
+    setLanguage(newLang);
+
+    // Reset conversation with new greeting
+    setMessages([
+      {
+        role: "bot",
+        text:
+          newLang === "en"
+            ? "Language switched to English. 👋"
+            : "Lugha imebadilishwa kuwa Kiswahili. 👋",
+        timestamp: new Date(),
+      },
+    ]);
   }
 
   // Format timestamp like 14:07
@@ -158,7 +183,6 @@ export default function ChatWindow({ onClose }) {
       return "";
     }
   }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
@@ -229,67 +253,69 @@ export default function ChatWindow({ onClose }) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        {/* Restart banner */}
         <AnimatePresence>
-          {messages.map((m, i) => {
-            // Restart banner
-            if (m.role === "system" && m.type === "banner") {
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="mx-auto bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full shadow-sm"
-                >
-                  {m.text}
-                </motion.div>
-              );
-            }
-
-            // Regular messages
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
-                className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {m.role === "bot" && (
-                  <img
-                    src={bubbleAvatarSrc}
-                    alt="Bot"
-                    className="w-7 h-7 rounded-full border border-gray-300 shadow-sm"
-                    onError={() => setBubbleAvatarSrc(BUBBLE_AVATAR_FALLBACK)}
-                  />
-                )}
-
-                <div
-                  className={`p-3 rounded-2xl max-w-[75%] text-sm leading-relaxed ${
-                    m.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-none"
-                      : m.role === "bot"
-                      ? "bg-gray-200 text-gray-900 rounded-bl-none"
-                      : "text-red-600 text-sm text-center w-full"
-                  }`}
-                >
-                  {m.text}
-                  {m.timestamp && (
-                    <div
-                      className={`text-[10px] mt-1 ${
-                        m.role === "user" ? "text-blue-200 text-right" : "text-gray-400 text-right"
-                      }`}
-                    >
-                      {fmtTime(m.timestamp)}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+          {showBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="mx-auto bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm px-4 py-2 rounded-full shadow-md"
+            >
+              🔄 Conversation restarted — starting fresh!
+            </motion.div>
+          )}
         </AnimatePresence>
 
-        {/* Typing indicator with pulsing avatar + animated dots */}
+        {/* Chat messages */}
+        <AnimatePresence>
+          {messages.map((m, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`flex items-start gap-2 ${
+                m.role === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
+              {m.role === "bot" && (
+                <img
+                  src={bubbleAvatarSrc}
+                  alt="Bot"
+                  className="w-7 h-7 rounded-full border border-gray-300 shadow-sm"
+                  onError={() => setBubbleAvatarSrc(BUBBLE_AVATAR_FALLBACK)}
+                />
+              )}
+
+              <div
+                className={`p-3 rounded-2xl max-w-[75%] text-sm leading-relaxed ${
+                  m.role === "user"
+                    ? "bg-blue-600 text-white rounded-br-none"
+                    : m.role === "bot"
+                    ? "bg-gray-200 text-gray-900 rounded-bl-none"
+                    : "text-red-600 text-sm text-center w-full"
+                }`}
+              >
+                {m.text}
+                {m.timestamp && (
+                  <div
+                    className={`text-[10px] mt-1 ${
+                      m.role === "user"
+                        ? "text-blue-200 text-right"
+                        : "text-gray-400 text-right"
+                    }`}
+                  >
+                    {fmtTime(m.timestamp)}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Typing indicator */}
         {isLoading && (
           <div className="flex items-center gap-2 text-gray-500 text-sm italic">
             <motion.img
@@ -321,7 +347,7 @@ export default function ChatWindow({ onClose }) {
           className="flex-1 border rounded-lg p-2 text-sm focus:ring focus:ring-blue-300"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
+          placeholder={language === "en" ? "Type your message..." : "Andika ujumbe wako..."}
         />
 
         {/* Upload */}
@@ -337,7 +363,7 @@ export default function ChatWindow({ onClose }) {
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept=".pdf,.txt,.csv.png,.jpg,.jpeg"
+          accept=".pdf,.txt,.csv,.png,.jpg,.jpeg"
           onChange={handleFileUpload}
         />
 
@@ -353,3 +379,4 @@ export default function ChatWindow({ onClose }) {
     </motion.div>
   );
 }
+
