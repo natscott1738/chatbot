@@ -1,3 +1,4 @@
+# backend/scripts/ingest_docs.py
 import os
 import json
 import faiss
@@ -7,23 +8,39 @@ import requests
 from pathlib import Path
 from bs4 import BeautifulSoup
 from PyPDF2 import PdfReader
-from openai import OpenAI
 from dotenv import load_dotenv
+
+# Optional local sentence-transformers backend
+USE_LOCAL = os.getenv("USE_LOCAL_EMBEDDINGS", "1").strip() not in ("0", "false", "False")
+EMBED_MODEL_LOCAL = os.getenv("LOCAL_EMBED_MODEL", "all-MiniLM-L6-v2")
+
+# OpenAI-related defaults (only used if USE_LOCAL is false)
+EMBED_MODEL_OPENAI = os.getenv("EMBED_MODEL", "text-embedding-3-small")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # --- Load env ---
 load_dotenv()
-BASE = Path(__file__).resolve().parents[1]
+BASE = Path(__file__).resolve().parents[1]  # backend/
 DOCS_DIR = BASE.parent / "docs" / "cbk_pdfs"
 OUT_DIR = BASE / "data" / "faiss_index"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-small")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# --- Local model lazy loader ---
+_MODEL = None
+def get_local_model():
+    global _MODEL
+    if _MODEL is None:
+        print(f"[embed] Loading local model '{EMBED_MODEL_LOCAL}' (sentence-transformers)...")
+        from sentence_transformers import SentenceTransformer
+        _MODEL = SentenceTransformer(EMBED_MODEL_LOCAL)
+        print("[embed] Local model loaded.")
+    return _MODEL
 
-# --- OpenAI client ---
-def get_client():
+# --- OpenAI client (lazy) ---
+def get_openai_client():
     if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY not set")
+        raise RuntimeError("OPENAI_API_KEY not set (required when USE_LOCAL_EMBEDDINGS=0)")
+    from openai import OpenAI
     return OpenAI(api_key=OPENAI_API_KEY)
 
 # --- Helpers ---
@@ -36,20 +53,38 @@ def chunk_text(text: str, max_chars: int = 1500, overlap: int = 100) -> list[str
         i += max_chars - overlap
     return [c.strip() for c in chunks if c.strip()]
 
-def embed_texts(client: OpenAI, texts: list[str], batch_size: int = 50) -> np.ndarray:
-    """Batch embeddings to reduce API calls."""
-    all_vecs = []
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i : i + batch_size]
-        resp = client.embeddings.create(model=EMBED_MODEL, input=batch)
-        vecs = [d.embedding for d in resp.data]
-        all_vecs.extend(vecs)
-        print(f"[embed] {i+len(batch)}/{len(texts)} chunks embedded")
-    return np.array(all_vecs, dtype=np.float32)
+def embed_texts(texts: list[str], batch_size: int = 64) -> np.ndarray:
+    """
+    Embeds texts using either the local SentenceTransformer model (default) or OpenAI
+    depending on USE_LOCAL flag / env. Returns float32 np.ndarray (n_texts, dim).
+    """
+    if USE_LOCAL:
+        model = get_local_model()
+        vecs = model.encode(texts, batch_size=batch_size, convert_to_numpy=True, show_progress_bar=True)
+        vecs = vecs.astype(np.float32)
+        # Normalize for cosine similarity
+        faiss.normalize_L2(vecs)
+        return vecs
+    else:
+        client = get_openai_client()
+        all_vecs = []
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            resp = client.embeddings.create(model=EMBED_MODEL_OPENAI, input=batch)
+            batch_vecs = [d.embedding for d in resp.data]
+            all_vecs.extend(batch_vecs)
+            print(f"[embed][openai] {i+len(batch)}/{len(texts)} chunks embedded")
+        vecs = np.array(all_vecs, dtype=np.float32)
+        faiss.normalize_L2(vecs)
+        return vecs
 
 # --- Local docs ---
 def read_local_docs() -> list[tuple[str, str]]:
     items = []
+    if not DOCS_DIR.exists():
+        print(f"[warn] docs dir not found: {DOCS_DIR}")
+        return items
+
     for path in DOCS_DIR.rglob("*"):
         text = None
         if path.suffix.lower() == ".pdf":
@@ -92,42 +127,43 @@ def fetch_cbk_pages(urls: list[str]) -> list[tuple[str, str]]:
 
 # --- Build FAISS index ---
 def build_index(all_docs: list[tuple[str, str]]):
-    client = get_client()
-    all_chunks, meta = [], {"chunks": []}
+    all_chunks = []
+    meta = []
 
     for src, text in all_docs:
         for idx, ch in enumerate(chunk_text(text)):
             all_chunks.append(ch)
-            meta["chunks"].append({"source": src, "chunk_id": idx, "len": len(ch)})
+            meta.append({"source": src, "chunk_id": idx, "len": len(ch)})
 
     if not all_chunks:
         print("[ingest] No chunks found. Check your docs and URLs.")
         return
 
-    print(f"[ingest] Embedding {len(all_chunks)} chunks...")
-    vectors = embed_texts(client, all_chunks)
+    print(f"[ingest] Embedding {len(all_chunks)} chunks (backend={'local' if USE_LOCAL else 'openai'})...")
+    vectors = embed_texts(all_chunks)
 
-    # Build FAISS index
+    # Cosine similarity index (Inner Product on normalized vectors)
     dim = vectors.shape[1]
-    index = faiss.IndexFlatL2(dim)
+    index = faiss.IndexFlatIP(dim)
     index.add(vectors)
 
-    # Save
+    # Save index and metadata
     faiss.write_index(index, str(OUT_DIR / "index.faiss"))
+    np.save(OUT_DIR / "vectors.npy", vectors)
+
     with open(OUT_DIR / "meta.json", "w", encoding="utf-8") as f:
-        json.dump({"chunks": all_chunks, "meta": meta["chunks"]}, f, ensure_ascii=False, indent=2)
+        json.dump({"chunks": all_chunks, "meta": meta}, f, ensure_ascii=False, indent=2)
+
     with open(OUT_DIR / "config.json", "w", encoding="utf-8") as f:
-        json.dump({"embed_model": EMBED_MODEL}, f)
+        json.dump({"embed_backend": "local" if USE_LOCAL else "openai", "embed_model": EMBED_MODEL_LOCAL if USE_LOCAL else EMBED_MODEL_OPENAI}, f)
 
     print(f"[ingest] Saved FAISS index with {len(all_chunks)} chunks to {OUT_DIR}")
 
 # --- Main ---
 def main():
-    # Local docs
     local_docs = read_local_docs()
     print(f"[ingest] Found {len(local_docs)} local docs")
 
-    # CBK URLs (expand as needed)
     urls = [
         "https://www.centralbank.go.ke/",
         "https://www.centralbank.go.ke/our-mission/",
@@ -141,7 +177,6 @@ def main():
         "https://www.centralbank.go.ke/securities/treasury-bills/",
         "https://www.centralbank.go.ke/securities/treasury-bonds/",
         "https://www.centralbank.go.ke/national-payments-system/",
-        "https://www.centralbank.go.ke/national-payment-system/"
         "https://www.centralbank.go.ke/contact-us/",
     ]
     web_docs = fetch_cbk_pages(urls)
